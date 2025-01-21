@@ -18,7 +18,6 @@ enum Maze<'a> {
 }
 
 impl<'a> Maze<'a> {
-    // Create a new branch
     fn new_branch(label: &str, left: &'a Maze<'a>, right: &'a Maze<'a>) -> Self {
         Maze::Branch {
             label: label.to_string(),
@@ -28,12 +27,10 @@ impl<'a> Maze<'a> {
         }
     }
 
-    // Create a new leaf
     fn new_leaf(label: &str) -> Self {
         Maze::Leaf(label.to_string())
     }
 
-    // Explore the maze and return a trace of exploration (immutable version)
     fn explore(&self) -> Vec<String> {
         match self {
             Maze::Branch { label, left, right, status } => {
@@ -58,7 +55,6 @@ impl<'a> Maze<'a> {
         }
     }
 
-    // Unexplore the maze and return a trace of unexploration (immutable version)
     fn unexplore(&self) -> Vec<String> {
         match self {
             Maze::Branch { label, left, right, status } => {
@@ -80,7 +76,6 @@ impl<'a> Maze<'a> {
         }
     }
 
-    // Explore the maze and record the trace in a mutable vector (2.3 Variante)
     fn explore_with_trace(&self, trace: &mut Vec<String>) {
         match self {
             Maze::Branch { label, left, right, status } => {
@@ -105,7 +100,6 @@ impl<'a> Maze<'a> {
         }
     }
 
-    // Visualize the maze structure
     fn visualize(&self, indent: &str) {
         match self {
             Maze::Branch { label, left, right, status } => {
@@ -121,7 +115,7 @@ impl<'a> Maze<'a> {
 }
 
 pub fn main() {
-    // Create the maze
+    println!("\nVERSION 3\n");
     let leaf2 = Maze::new_leaf("2");
     let leaf4 = Maze::new_leaf("4");
     let leaf5 = Maze::new_leaf("5");
@@ -133,17 +127,13 @@ pub fn main() {
     let branch6 = Maze::new_branch("6", &branch3, &branch7);
     let branch0 = Maze::new_branch("0", &branch1, &branch6);
 
-    // Explore using mutable trace
     let mut trace = Vec::new();
     branch0.explore_with_trace(&mut trace);
     println!("Trace of exploration (with mutable trace): {:?}", trace);
 
-    // Unexplore and visualize
     branch0.unexplore();
-    println!("Maze after unexploring:");
     branch0.visualize("");
 
-    // Explore using immutable trace
     let trace_immutable = branch0.explore();
     println!("Trace of exploration (immutable): {:?}", trace_immutable);
 }

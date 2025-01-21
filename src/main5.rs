@@ -20,7 +20,7 @@ enum Maze {
 }
 
 impl Maze {
-    // Create a new branch
+
     fn new_branch(label: &str, left: Rc<Maze>, right: Rc<Maze>) -> Self {
         Maze::Branch {
             label: label.to_string(),
@@ -30,73 +30,27 @@ impl Maze {
         }
     }
 
-    // Create a new leaf
     fn new_leaf(label: &str) -> Rc<Self> {
         Rc::new(Maze::Leaf(label.to_string()))
     }
 
-    // Explore the maze and return a trace of exploration (immutable version)
-    fn explore(&self) -> Vec<String> {
-        match self {
-            Maze::Branch { label, left, right, status } => {
-                let mut trace = Vec::new();
-                let mut current_status = status.borrow_mut();
-                match *current_status {
-                    Exploration::UnExplored => {
-                        *current_status = Exploration::Explored;
-                        trace.push(label.clone());
-                        drop(current_status);
-
-                        trace.extend(left.explore());
-                        trace.extend(right.explore());
-                    }
-                    _ => {
-                        trace.push(label.clone());
-                    }
-                }
-                trace
-            }
-            Maze::Leaf(label) => vec![label.clone()],
-        }
-    }
-
-    // Unexplore the maze and return a trace of unexploration (immutable version)
-    fn unexplore(&self) -> Vec<String> {
-        match self {
-            Maze::Branch { label, left, right, status } => {
-                let mut trace = Vec::new();
-                let mut current_status = status.borrow_mut();
-                if *current_status == Exploration::Explored {
-                    *current_status = Exploration::UnExplored;
-                    trace.push(label.clone());
-                    drop(current_status);
-
-                    trace.extend(left.unexplore());
-                    trace.extend(right.unexplore());
-                } else {
-                    trace.push(label.clone());
-                }
-                trace
-            }
-            Maze::Leaf(label) => vec![label.clone()],
-        }
-    }
-
-    // Explore the maze and record the trace in a mutable vector (2.3 Variante)
-    fn explore_with_trace(&self, work: &mut Vec<Rc<Maze>>, trace: &mut Vec<String>) {
+    fn explore_with_trace(&self, self_rc: Rc<Maze>, work: &mut Vec<Rc<Maze>>, trace: &mut Vec<String>) {
         match self {
             Maze::Branch { label, left, right, status } => {
                 let mut current_status = status.borrow_mut();
                 match *current_status {
                     Exploration::UnExplored => {
-                        *current_status = Exploration::Explored;
+                        *current_status = Exploration::PartiallyExplored;
                         trace.push(label.clone());
-                        drop(current_status);
-
+                        work.push(self_rc);
                         work.push(left.clone());
+                    }
+                    Exploration::PartiallyExplored => {
+                        *current_status = Exploration::Explored;
+                        trace.push(label.clone());
                         work.push(right.clone());
                     }
-                    _ => {
+                    Exploration::Explored => {
                         trace.push(label.clone());
                     }
                 }
@@ -107,7 +61,6 @@ impl Maze {
         }
     }
 
-    // Visualize the maze structure
     fn visualize(&self, indent: &str) {
         match self {
             Maze::Branch { label, left, right, status } => {
@@ -122,7 +75,6 @@ impl Maze {
     }
 }
 
-// Function to create the maze
 fn maze() -> Rc<Maze> {
     let leaf2 = Maze::new_leaf("2");
     let leaf4 = Maze::new_leaf("4");
@@ -139,12 +91,15 @@ fn maze() -> Rc<Maze> {
 }
 
 pub fn main() {
+    println!("\nVERSION 5\n");
     let mut work = vec![maze()];
-    // in a concurrent version, each worker would do the following
     let mut trace = vec![];
-    while work.len() != 0 {
+
+    work[0].visualize("");
+
+    while !work.is_empty() {
         let node = work.pop().expect("work stack should not be empty");
-        node.explore_with_trace(&mut work, &mut trace);
-        println!("trace so far: {:?}", trace);
+        node.explore_with_trace(node.clone(), &mut work, &mut trace);
+        println!("Current trace: {:?}", trace);
     }
 }
