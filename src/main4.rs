@@ -19,7 +19,6 @@ enum Maze {
 }
 
 impl Maze {
-    // Create a new branch
     fn new_branch(label: &str, left: Rc<Maze>, right: Rc<Maze>) -> Self {
         Maze::Branch {
             label: label.to_string(),
@@ -29,12 +28,10 @@ impl Maze {
         }
     }
 
-    // Create a new leaf
     fn new_leaf(label: &str) -> Rc<Self> {
         Rc::new(Maze::Leaf(label.to_string()))
     }
 
-    // Explore the maze and return a trace of exploration (immutable version)
     fn explore(&self) -> Vec<String> {
         match self {
             Maze::Branch { label, left, right, status } => {
@@ -59,7 +56,6 @@ impl Maze {
         }
     }
 
-    // Unexplore the maze and return a trace of unexploration (immutable version)
     fn unexplore(&self) -> Vec<String> {
         match self {
             Maze::Branch { label, left, right, status } => {
@@ -81,7 +77,6 @@ impl Maze {
         }
     }
 
-    // Explore the maze and record the trace in a mutable vector (2.3 Variante)
     fn explore_with_trace(&self, trace: &mut Vec<String>) {
         match self {
             Maze::Branch { label, left, right, status } => {
@@ -106,7 +101,6 @@ impl Maze {
         }
     }
 
-    // Visualize the maze structure
     fn visualize(&self, indent: &str) {
         match self {
             Maze::Branch { label, left, right, status } => {
@@ -121,7 +115,6 @@ impl Maze {
     }
 }
 
-// Function to create the maze
 fn maze() -> Rc<Maze> {
     let leaf2 = Maze::new_leaf("2");
     let leaf4 = Maze::new_leaf("4");
@@ -138,19 +131,16 @@ fn maze() -> Rc<Maze> {
 }
 
 pub fn main() {
+    println!("\nVERSION 4\n");
     let maze = maze();
 
-    // Explore using mutable trace
     let mut trace = Vec::new();
     maze.explore_with_trace(&mut trace);
     println!("Trace of exploration (with mutable trace): {:?}", trace);
 
-    // Unexplore and visualize
     maze.unexplore();
-    println!("Maze after unexploring:");
     maze.visualize("");
 
-    // Explore using immutable trace
     let trace_immutable = maze.explore();
     println!("Trace of exploration (immutable): {:?}", trace_immutable);
 }
